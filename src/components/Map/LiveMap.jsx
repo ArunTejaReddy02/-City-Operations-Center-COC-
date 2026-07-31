@@ -64,11 +64,9 @@ export default function LiveMap({
         map.on('load', () => {
           mapRef.current = map;
           setMapLoaded(true);
-          // Store initial center to keep pointer stable during zoom
-          let stableCenter = map.getCenter();
+          // Hide complaints and sensor markers when zoomed out too far
           map.on('zoom', () => {
             const zoom = map.getZoom();
-            // Hide complaints and sensor markers when zoomed out too far
             const hide = zoom < 12;
             Object.values(markersRef.current).forEach((m) => {
               if (!m._customType) return;
@@ -76,12 +74,17 @@ export default function LiveMap({
               const el = m.getElement();
               el.style.display = hide ? 'none' : '';
             });
-            // Keep map center stable when zooming via scroll to prevent pointer drift
-            stableCenter = map.getCenter();
           });
-          // Ensure center is preserved after zoom ends
-          map.on('zoomend', () => {
-            map.setCenter(stableCenter);
+          // Hide complaints and sensor markers when zoomed out too far
+          map.on('zoom', () => {
+            const zoom = map.getZoom();
+            const hide = zoom < 12;
+            Object.values(markersRef.current).forEach((m) => {
+              if (!m._customType) return;
+              if (m._customType === 'team') return; // always show teams
+              const el = m.getElement();
+              el.style.display = hide ? 'none' : '';
+            });
           });
         });
       } catch (err) {
@@ -171,14 +174,14 @@ export default function LiveMap({
     });
   }, [fieldTeams, mapLoaded, onMarkerClick]);
 
-  // Fly to selected incident
+  // Center map on selected incident (orange spot) and keep it in the middle
   useEffect(() => {
     if (!mapRef.current || !selectedIncident) return;
-
-    mapRef.current.flyTo({
-      center: [selectedIncident.location.lng, selectedIncident.location.lat],
+    const { lng, lat } = selectedIncident.location;
+    mapRef.current.easeTo({
+      center: [lng, lat],
       zoom: 16,
-      duration: 1200,
+      duration: 800,
       essential: true,
     });
   }, [selectedIncident]);
