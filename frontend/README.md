@@ -17,22 +17,23 @@ Currently, civic complaints, field force locations, and COC sensor data live in 
 ---
 
 ## ✨ Key Features
-- **Unified GIS Dashboard:** A live Leaflet-based map interface displaying complaints, sensor events, and active field teams.
+- **Unified GIS Dashboard:** A live MapLibre GL JS vector-map interface displaying complaints, sensor events, and active field teams across Visakhapatnam.
 - **Automated Incident Matching:** Geospatial matching engine that links citizen complaints to nearby automated CCTV/sensor alerts.
 - **Smart Dispatch:** Ranks and suggests the nearest available field teams based on live location feeds, allowing operators to assign tasks in a single click.
+- **TEE Security & Enclave Protection:** Trusted Execution Environment (AMD SEV-SNP confidential VMs) architecture protecting citizen PII (Personally Identifiable Information) and CCTV metadata with hardware-level memory encryption and remote attestation.
 - **Role-Based Workflows:** Distinct views for Command Center Operators, Field Teams, and Municipal ingest nodes.
-- **Modern & Premium UI:** Built with TailwindCSS and GSAP for fluid, cinematic animations and micro-interactions.
+- **Modern & Premium UI:** Built with React 19, TailwindCSS, and GSAP for fluid, cinematic animations and micro-interactions.
 
 ---
 
 ## 🛠️ Technology Stack
-- **Frontend Framework:** React 18
-- **Build Tool:** Vite
-- **Styling:** Tailwind CSS & Custom CSS Modules (`design-system.css`)
+- **Frontend Framework:** React 19 + Vite
+- **GIS Mapping:** MapLibre GL JS (Vector Map Engine)
+- **Security Enclave:** Trusted Execution Environment (TEE - AMD SEV-SNP Confidential VMs)
+- **Styling:** Tailwind CSS & Custom CSS System
 - **Animations:** GSAP (GreenSock Animation Platform)
-- **Maps:** Leaflet & React-Leaflet
 - **Icons:** Lucide React
-- **Routing:** React Router DOM
+- **Routing:** React Router DOM v7
 
 ---
 

@@ -15,6 +15,10 @@ import authRoutes from "./modules/auth/routes";
 import fieldTeamRoutes from "./modules/field-teams/routes";
 import assignmentRoutes from "./modules/assignments/routes";
 import sensorEventRoutes from "./modules/sensor-events/routes";
+import matchingRoutes from "./modules/matching/routes";
+import statusRoutes from "./modules/status/routes";
+import notificationRoutes from "./modules/notifications/routes";
+import analyticsRoutes from "./modules/analytics/routes";
 import { initWebSocketServer } from "./ws";
 
 const app = express();
@@ -31,6 +35,10 @@ app.use("/api/v1/field-teams", fieldTeamRoutes);
 app.use("/api/v1/assignments", assignmentRoutes);
 app.use("/api/v1/audit", auditRoutes);
 app.use("/api/v1/sensor-events", sensorEventRoutes);
+app.use("/api/v1/matching", matchingRoutes);
+app.use("/api/v1/status", statusRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/analytics", analyticsRoutes);
 
 // Swagger config
 const swaggerOptions = {
