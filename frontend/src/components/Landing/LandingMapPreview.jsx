@@ -1,32 +1,21 @@
-import { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
+import { useState, useEffect, useRef } from "react";
+import { Map } from "@/components/UI/map";
 
-// Custom marker icon
-const customIcon = new L.Icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-// Helper component to fix Leaflet container size calculation on mount
-function MapResizer() {
-  const map = useMap();
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      map.invalidateSize();
-    }, 200);
-    return () => clearTimeout(timer);
-  }, [map]);
-  return null;
-}
+const styles = {
+  default: undefined,
+  openstreetmap: "https://tiles.openfreemap.org/styles/bright",
+  openstreetmap3d: "https://tiles.openfreemap.org/styles/liberty",
+};
 
 export default function LandingMapPreview() {
-  const position = [17.6868, 83.2185]; // Visakhapatnam
+  const mapRef = useRef(null);
+  const [style, setStyle] = useState("default");
+  const selectedStyle = styles[style];
+  const is3D = style === "openstreetmap3d";
+
+  useEffect(() => {
+    mapRef.current?.easeTo({ pitch: is3D ? 60 : 0, duration: 500 });
+  }, [is3D]);
 
   return (
     <section id="gis-map" className="py-28 px-6 bg-[#fefae0]">
@@ -40,33 +29,28 @@ export default function LandingMapPreview() {
           </h2>
         </div>
 
-        <div className="h-[460px] rounded-3xl overflow-hidden border border-[#d4cc9a] shadow-xl relative z-0">
-          <MapContainer
-            center={position}
+        <div className="h-[460px] rounded-3xl overflow-hidden border border-[#d4cc9a] shadow-xl relative">
+          <Map
+            ref={mapRef}
+            center={[83.2185, 17.6868]}
             zoom={14}
-            scrollWheelZoom={false}
-            style={{ width: '100%', height: '100%' }}
-          >
-            <MapResizer />
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-              url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-              maxZoom={19}
-            />
-            <Marker position={position} icon={customIcon}>
-              <Popup>
-                <div className="p-1">
-                  <div className="font-bold text-xs text-[#283618]">Incident CMP-8841</div>
-                  <div className="text-[11px] text-[#606c38]">Pothole Reported • 12m ago</div>
-                </div>
-              </Popup>
-            </Marker>
-            <Circle
-              center={position}
-              radius={350}
-              pathOptions={{ color: '#bc6c25', fillColor: '#dda15e', fillOpacity: 0.35 }}
-            />
-          </MapContainer>
+            styles={
+              selectedStyle
+                ? { light: selectedStyle, dark: selectedStyle }
+                : undefined
+            }
+          />
+          <div className="absolute top-4 right-4 z-10">
+            <select
+              value={style}
+              onChange={(e) => setStyle(e.target.value)}
+              className="bg-[#faf5d0] text-[#283618] rounded-md border border-[#d4cc9a] px-3 py-1.5 text-sm shadow font-semibold focus:outline-none cursor-pointer"
+            >
+              <option value="default">Default (Carto)</option>
+              <option value="openstreetmap">OpenStreetMap</option>
+              <option value="openstreetmap3d">OpenStreetMap 3D</option>
+            </select>
+          </div>
         </div>
       </div>
     </section>
