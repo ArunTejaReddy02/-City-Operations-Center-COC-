@@ -58,7 +58,7 @@ Make sure you have [Node.js](https://nodejs.org/) (v18+) and `npm` installed.
    npm run dev
    ```
 
-4. Open your browser and navigate to the local server address provided in the terminal (usually `http://localhost:5173`).
+4. Open your browser and navigate to the local server address provided in the terminal (usually `http://localhost:5174`).
 
 ---
 
