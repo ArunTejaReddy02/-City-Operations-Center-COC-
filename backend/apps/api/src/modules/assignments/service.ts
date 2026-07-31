@@ -1,5 +1,6 @@
 import { prisma, FieldTeamStatus, AssignmentStatus } from "@vizagops/prisma";
 import axios from "axios";
+import { config } from "@vizagops/config";
 export class AssignmentService {
   async createAssignment(payload: any, telemetry: any) {
     const { complaintId, fieldTeamId } = payload;
@@ -66,7 +67,7 @@ export class AssignmentService {
       return assignment;
     });
     try {
-      await axios.post("http://localhost:3001/api/v1/audit/log", {
+      await axios.post(`${config.AUDIT_SERVICE_URL}/log`, {
         entity: "Assignment",
         entityId: result.id,
         action: "CREATE",
@@ -114,7 +115,7 @@ export class AssignmentService {
       return updated;
     });
     try {
-      await axios.post("http://localhost:3001/api/v1/audit/log", {
+      await axios.post(`${config.AUDIT_SERVICE_URL}/log`, {
         entity: "Assignment",
         entityId: result.id,
         action: "UPDATE_STATUS",

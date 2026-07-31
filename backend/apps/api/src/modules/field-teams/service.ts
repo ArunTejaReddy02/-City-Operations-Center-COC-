@@ -1,5 +1,6 @@
 import { FieldTeamRepository } from "./repository";
 import axios from "axios";
+import { config } from "@vizagops/config";
 export class FieldTeamService {
   constructor(private repo: FieldTeamRepository = new FieldTeamRepository()) {}
   async getAll() {
@@ -14,7 +15,7 @@ export class FieldTeamService {
       availability: "AVAILABLE"
     });
     try {
-      await axios.post("http://localhost:3001/api/v1/audit/log", {
+      await axios.post(`${config.AUDIT_SERVICE_URL}/log`, {
         entity: "FieldTeam",
         entityId: team.id,
         action: "CREATE",
@@ -36,7 +37,7 @@ export class FieldTeamService {
     }
     const updated = await this.repo.update(id, payload);
     try {
-      await axios.post("http://localhost:3001/api/v1/audit/log", {
+      await axios.post(`${config.AUDIT_SERVICE_URL}/log`, {
         entity: "FieldTeam",
         entityId: updated.id,
         action: "UPDATE",

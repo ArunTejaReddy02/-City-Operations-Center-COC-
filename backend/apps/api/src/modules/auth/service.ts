@@ -23,7 +23,7 @@ export class AuthService {
       role: payload.role || "CITIZEN"
     });
     try {
-      await axios.post("http://localhost:3001/api/v1/audit/log", {
+      await axios.post(`${config.AUDIT_SERVICE_URL}/log`, {
         entity: "User",
         entityId: user.id,
         action: "REGISTER",
@@ -57,7 +57,7 @@ export class AuthService {
       { expiresIn: config.JWT_EXPIRES_IN as any }
     );
     try {
-      await axios.post("http://localhost:3001/api/v1/audit/log", {
+      await axios.post(`${config.AUDIT_SERVICE_URL}/log`, {
         entity: "User",
         entityId: user.id,
         action: "LOGIN",

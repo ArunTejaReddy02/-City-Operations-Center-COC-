@@ -1,5 +1,6 @@
 import { ComplaintRepository } from "./repository";
 import axios from "axios";
+import { config } from "@vizagops/config";
 
 export class ComplaintService {
   constructor(private repo: ComplaintRepository = new ComplaintRepository()) {}
@@ -26,7 +27,7 @@ export class ComplaintService {
     const complaint = await this.repo.create(normalized);
 
     try {
-      await axios.post("http://localhost:3001/api/v1/audit/log", {
+      await axios.post(`${config.AUDIT_SERVICE_URL}/log`, {
         entity: "Complaint",
         entityId: complaint.id,
         action: "CREATED",

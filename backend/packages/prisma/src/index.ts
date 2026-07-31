@@ -5,7 +5,10 @@ import path from 'path';
 // Ensure DATABASE_URL is loaded before PrismaClient is instantiated.
 // Prisma looks for .env next to schema.prisma, but when running via ts-node-dev
 // from a parent workspace, that auto-discovery can fail. We load it explicitly.
-dotenvConfig({ path: path.resolve(__dirname, '../prisma/.env') });
+dotenvConfig({ path: path.resolve(__dirname, '../.env') });
+dotenvConfig({ path: path.resolve(__dirname, '../../../.env') });
+dotenvConfig({ path: path.resolve(__dirname, '../../../../.env') });
+dotenvConfig();
 
 // Prevent multiple instances of Prisma Client in development
 declare global {

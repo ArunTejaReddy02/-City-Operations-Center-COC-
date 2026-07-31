@@ -1,1 +1,1 @@
-{"name":"@vizagops/validation","version":"1.0.0","main":"src/index.ts","dependencies":{"zod":"^3.22.4"},"devDependencies":{"typescript":"^5.3.3"}}
+{"name":"@vizagops/validation","version":"1.0.0","main":"src/index.js","dependencies":{"zod":"^3.22.4"},"devDependencies":{"typescript":"^5.3.3"}}

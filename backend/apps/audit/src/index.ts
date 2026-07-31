@@ -25,7 +25,7 @@ app.use("/api/v1/audit", auditRoutes);
 
 app.use(globalErrorHandler);
 
-const PORT = 3001;
+const PORT = process.env.AUDIT_PORT || process.env.PORT || 3001;
 app.listen(PORT, () => {
   logger.info({ message: "Audit Service started", port: PORT, env: config.NODE_ENV });
 });

@@ -1,7 +1,8 @@
 import { Router } from "express";
 import axios from "axios";
+import { config } from "@vizagops/config";
 const router = Router();
-const AUDIT_SVC_URL = "http://localhost:3001/api/v1/audit";
+const AUDIT_SVC_URL = config.AUDIT_SERVICE_URL;
 router.get("/verify", async (req, res, next) => {
   try {
     const { data } = await axios.get(`${AUDIT_SVC_URL}/verify`);

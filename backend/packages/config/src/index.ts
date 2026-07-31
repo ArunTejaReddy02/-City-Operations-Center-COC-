@@ -14,6 +14,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().default('dev-jwt-secret-change-in-production'),
   JWT_EXPIRES_IN: z.string().default('24h'),
   GROQ_API_KEY: z.string().optional().default(''),
+  AUDIT_SERVICE_URL: z.string().default('http://localhost:3001/api/v1/audit'),
 });
 
 const parsed = envSchema.safeParse(process.env);

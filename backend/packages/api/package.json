@@ -1,7 +1,7 @@
 {
   "name": "@vizagops/api",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "main": "src/index.js",
   "dependencies": {
     "@vizagops/types": "*",
     "@vizagops/logger": "*",

@@ -6,7 +6,9 @@
     ],
     "name": "vizagops-backend",
     "scripts": {
-        "build": "npm run build --workspaces --if-present",
+        "build": "npm run generate -w @vizagops/prisma && npm run build --workspaces --if-present",
+        "start": "npm run start -w @vizagops/api-gateway",
+        "start:audit": "npm run start -w @vizagops/audit",
         "dev": "concurrently \"npm run dev -w @vizagops/api-gateway\" \"npm run dev -w @vizagops/audit\"",
         "lint": "npm run lint --workspaces --if-present"
     },
