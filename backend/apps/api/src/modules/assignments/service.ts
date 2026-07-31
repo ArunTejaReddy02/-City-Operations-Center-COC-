@@ -49,6 +49,10 @@ export class AssignmentService {
           fieldTeamId,
           assignedById: telemetry.userId,
           status: AssignmentStatus.ASSIGNED
+        },
+        include: {
+          complaint: true,
+          fieldTeam: true
         }
       });
       await tx.fieldTeam.update({
@@ -89,6 +93,10 @@ export class AssignmentService {
         data: {
           status,
           completedAt: status === AssignmentStatus.COMPLETED ? new Date() : null
+        },
+        include: {
+          complaint: true,
+          fieldTeam: true
         }
       });
       if (status === AssignmentStatus.COMPLETED || status === AssignmentStatus.CANCELLED) {
@@ -117,5 +125,15 @@ export class AssignmentService {
       console.error("Failed to write audit event for assignment update");
     }
     return result;
+  }
+
+  async getAllAssignments() {
+    return prisma.assignment.findMany({
+      include: {
+        complaint: true,
+        fieldTeam: true
+      },
+      orderBy: { assignedAt: "desc" }
+    });
   }
 }

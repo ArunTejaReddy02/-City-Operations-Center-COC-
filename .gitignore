@@ -27,3 +27,14 @@ dist-ssr
 
 # Agent configuration
 .agents/
+
+# Compiled JS output from ts-node-dev (source of truth is TypeScript)
+backend/apps/api/src/**/*.js
+backend/apps/audit/src/**/*.js
+backend/packages/**/src/**/*.js
+backend/packages/**/prisma/*.js
+
+# SQLite local dev database
+*.db
+*.db-shm
+*.db-wal

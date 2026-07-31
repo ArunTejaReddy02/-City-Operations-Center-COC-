@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Map, FileText, BarChart3, ClipboardList,
   Settings, Users, Radio, Bell, Search, ChevronLeft,
@@ -18,6 +18,7 @@ import { IconButton } from '../UI/Buttons';
  *  - Footer
  */
 export default function DashboardLayout({ children, wsStatus = 'connected', activeIncidents = 0 }) {
+  const navigate = useNavigate();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -29,7 +30,7 @@ export default function DashboardLayout({ children, wsStatus = 'connected', acti
     <div className="dashboard-layout">
       {/* === Sidebar === */}
       <aside className={`dashboard-sidebar ${sidebarCollapsed ? 'collapsed' : ''} ${mobileOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo">
+        <div className="sidebar-logo cursor-pointer" onClick={() => navigate('/')}>
           <div className="sidebar-logo-icon">V</div>
           {!sidebarCollapsed && (
             <div className="sidebar-logo-text">
