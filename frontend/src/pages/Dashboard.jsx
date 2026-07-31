@@ -14,6 +14,27 @@ import LiveMap from '../components/Map/LiveMap';
 import TriagePanel from '../components/Triage/TriagePanel';
 import NotificationCenter from '../components/Notifications/NotificationCenter';
 import useWebSocket from '../hooks/useWebSocket';
+import { useAuth } from '../context/AuthContext';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+
+const mapComplaintFromBackend = (c) => ({
+  complaint_id: c.id,
+  type: c.category?.toLowerCase() || 'pothole',
+  description: c.description || '',
+  location: { lat: c.latitude || 17.6868, lng: c.longitude || 83.2185 },
+  ward_id: c.ward || 'GVMC-W12',
+  status: c.status?.toLowerCase() || 'received',
+  assigned_team_id: c.assignments?.[0]?.fieldTeamId || null,
+  reported_at: c.createdAt
+});
+
+const mapFieldTeamFromBackend = (t) => ({
+  team_id: t.id,
+  status: t.availability?.toLowerCase() || 'available',
+  location: { lat: t.currentLat || 17.689, lng: t.currentLng || 83.217 },
+  updated_at: t.updatedAt || new Date().toISOString()
+});
 
 gsap.registerPlugin(useGSAP);
 
@@ -24,6 +45,7 @@ gsap.registerPlugin(useGSAP);
  * Real-time animations driven by WebSocket events, not ScrollTrigger.
  */
 export default function Dashboard() {
+  const { user, accessToken } = useAuth();
   const [loading, setLoading] = useState(true);
   const [synced, setSynced] = useState(false);
   const [complaints, setComplaints] = useState([]);
@@ -94,9 +116,9 @@ export default function Dashboard() {
     }
   }, [synced]);
 
-  const { status: wsStatus } = useWebSocket('ws://localhost:3001/ws', {
+  const { status: wsStatus } = useWebSocket('ws://localhost:3000/ws', {
     onMessage: handleWsMessage,
-    mockMode: true,
+    mockMode: false,
   });
 
   const addNotification = useCallback((notif) => {
@@ -115,21 +137,71 @@ export default function Dashboard() {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   }, []);
 
-  const handleDispatch = useCallback((incident) => {
-    // Simulate dispatch
-    setComplaints((prev) =>
-      prev.map((c) =>
-        c.complaint_id === incident.complaint_id
-          ? { ...c, status: 'assigned' }
-          : c
-      )
-    );
-    addNotification({
-      title: 'Team Dispatched',
-      message: `Nearest team assigned to ${incident.complaint_id}`,
-      priority: 'low',
-    });
-  }, [addNotification]);
+  const handleDispatch = useCallback(async (incident) => {
+    if (!accessToken) return;
+
+    const getDistance = (loc1, loc2) => {
+      const dx = (loc1?.lat || 0) - (loc2?.lat || 0);
+      const dy = (loc1?.lng || 0) - (loc2?.lng || 0);
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const available = fieldTeams.filter(t => t.status === 'available');
+    if (available.length === 0) {
+      addNotification({
+        title: 'Dispatch Failed',
+        message: 'No available field teams to dispatch.',
+        priority: 'high'
+      });
+      return;
+    }
+
+    let nearestTeam = available[0];
+    let minDistance = getDistance(incident.location, nearestTeam.location);
+    for (let i = 1; i < available.length; i++) {
+      const dist = getDistance(incident.location, available[i].location);
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearestTeam = available[i];
+      }
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/assignments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          complaintId: incident.complaint_id,
+          fieldTeamId: nearestTeam.team_id,
+        }),
+      });
+
+      if (res.ok) {
+        addNotification({
+          title: 'Team Dispatched',
+          message: `${nearestTeam.team_id} assigned to ${incident.complaint_id}`,
+          priority: 'low',
+        });
+      } else {
+        const data = await res.json();
+        addNotification({
+          title: 'Dispatch Failed',
+          message: data.error?.message || 'Error occurred during assignment.',
+          priority: 'high',
+        });
+      }
+    } catch (err) {
+      console.error('[Dashboard] Dispatch error:', err);
+      addNotification({
+        title: 'Dispatch Error',
+        message: 'Could not connect to dispatcher service.',
+        priority: 'high',
+      });
+    }
+  }, [accessToken, fieldTeams, addNotification]);
 
   // Entrance animation (runs after loader completes)
   const handleLoaderComplete = useCallback(() => {
@@ -182,97 +254,51 @@ export default function Dashboard() {
     }
   }, { dependencies: [loading] });
 
-  // Generate initial mock data
+  // Fetch real data on mount / auth completion
   useEffect(() => {
-    if (!loading) {
-      // Seed some initial field teams
-      setFieldTeams([
-        { team_id: 'FT-01', status: 'available', location: { lat: 17.689, lng: 83.217 }, updated_at: new Date().toISOString() },
-        { team_id: 'FT-02', status: 'en_route', location: { lat: 17.685, lng: 83.221 }, updated_at: new Date().toISOString() },
-        { team_id: 'FT-03', status: 'available', location: { lat: 17.691, lng: 83.215 }, updated_at: new Date().toISOString() },
-        { team_id: 'FT-04', status: 'on_site', location: { lat: 17.684, lng: 83.219 }, updated_at: new Date().toISOString() },
-        { team_id: 'FT-05', status: 'available', location: { lat: 17.688, lng: 83.222 }, updated_at: new Date().toISOString() },
-      ]);
+    if (loading || !accessToken) return;
 
-      // Seed initial complaints to make the incident feed overflow and scrollable
-      setComplaints([
-        {
-          complaint_id: 'CMP-POTH001',
-          type: 'pothole',
-          description: 'Deep pothole on the main road lane causing traffic slow-down.',
-          location: { lat: 17.689, lng: 83.217 },
-          ward_id: 'GVMC-W12',
-          status: 'received',
-          reported_at: new Date(Date.now() - 5 * 60000).toISOString(),
-        },
-        {
-          complaint_id: 'CMP-WAT002',
-          type: 'waterlogging',
-          description: 'Waterlogging at the intersection near the central market.',
-          location: { lat: 17.685, lng: 83.221 },
-          ward_id: 'GVMC-W12',
-          status: 'assigned',
-          assigned_team_id: 'FT-02',
-          reported_at: new Date(Date.now() - 15 * 60000).toISOString(),
-        },
-        {
-          complaint_id: 'CMP-LIGHT003',
-          type: 'streetlight',
-          description: 'Multiple streetlights blinking or completely out of order.',
-          location: { lat: 17.691, lng: 83.215 },
-          ward_id: 'GVMC-W12',
-          status: 'received',
-          reported_at: new Date(Date.now() - 25 * 60000).toISOString(),
-        },
-        {
-          complaint_id: 'CMP-OBS004',
-          type: 'road_obstruction',
-          description: 'Fallen tree branch blocking the left pedestrian walkway.',
-          location: { lat: 17.684, lng: 83.219 },
-          ward_id: 'GVMC-W12',
-          status: 'in-progress',
-          assigned_team_id: 'FT-04',
-          reported_at: new Date(Date.now() - 35 * 60000).toISOString(),
-        },
-        {
-          complaint_id: 'CMP-POTH005',
-          type: 'pothole',
-          description: 'Aggressive pothole group near the metro station exit.',
-          location: { lat: 17.688, lng: 83.222 },
-          ward_id: 'GVMC-W12',
-          status: 'received',
-          reported_at: new Date(Date.now() - 45 * 60000).toISOString(),
-        },
-        {
-          complaint_id: 'CMP-WAT006',
-          type: 'waterlogging',
-          description: 'Minor flooding in the residential street after brief shower.',
-          location: { lat: 17.687, lng: 83.220 },
-          ward_id: 'GVMC-W12',
-          status: 'received',
-          reported_at: new Date(Date.now() - 55 * 60000).toISOString(),
-        },
-        {
-          complaint_id: 'CMP-LIGHT007',
-          type: 'streetlight',
-          description: 'Streetlight pole #45 completely dark for 3 consecutive days.',
-          location: { lat: 17.690, lng: 83.216 },
-          ward_id: 'GVMC-W12',
-          status: 'received',
-          reported_at: new Date(Date.now() - 65 * 60000).toISOString(),
-        },
-        {
-          complaint_id: 'CMP-OBS008',
-          type: 'road_obstruction',
-          description: 'Discarded construction material on the road shoulder.',
-          location: { lat: 17.683, lng: 83.218 },
-          ward_id: 'GVMC-W12',
-          status: 'received',
-          reported_at: new Date(Date.now() - 75 * 60000).toISOString(),
+    const fetchData = async () => {
+      try {
+        // Fetch complaints
+        const complaintsRes = await fetch(`${API_URL}/complaints`, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (complaintsRes.ok) {
+          const resData = await complaintsRes.json();
+          if (resData.success && resData.data) {
+            setComplaints(resData.data.map(mapComplaintFromBackend));
+          }
         }
-      ]);
-    }
-  }, [loading]);
+
+        // Fetch field teams
+        const teamsRes = await fetch(`${API_URL}/field-teams`, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (teamsRes.ok) {
+          const resData = await teamsRes.json();
+          if (resData.success && resData.data) {
+            setFieldTeams(resData.data.map(mapFieldTeamFromBackend));
+          }
+        }
+
+        // Fetch sensor events
+        const sensorsRes = await fetch(`${API_URL}/sensor-events`, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (sensorsRes.ok) {
+          const resData = await sensorsRes.json();
+          if (resData.success && resData.data) {
+            setSensorEvents(resData.data);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch dashboard data:', err);
+      }
+    };
+
+    fetchData();
+  }, [loading, accessToken]);
 
   const activeComplaints = complaints.filter((c) => c.status !== 'resolved').length;
   const availableTeams = fieldTeams.filter((t) => t.status === 'available').length;

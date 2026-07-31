@@ -41,4 +41,12 @@ export class ComplaintService {
 
     return complaint;
   }
+
+  async getAllComplaints() {
+    return this.repo.getAll();
+  }
+
+  async getComplaintsByCitizen(citizenId: string) {
+    return this.repo.findByCitizenId(citizenId);
+  }
 }
