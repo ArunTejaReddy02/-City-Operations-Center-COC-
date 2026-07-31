@@ -13,7 +13,7 @@ import StatCard from '../components/Stats/StatCard';
 import LiveMap from '../components/Map/LiveMap';
 import TriagePanel from '../components/Triage/TriagePanel';
 import NotificationCenter from '../components/Notifications/NotificationCenter';
-import useWebSocket from '../hooks/useWebSocket';
+import useWebSocket, { VIZAG_LOCATIONS } from '../hooks/useWebSocket';
 
 gsap.registerPlugin(useGSAP);
 
@@ -186,15 +186,18 @@ export default function Dashboard() {
   useEffect(() => {
     if (!loading) {
       setFieldTeams(
-        Array.from({ length: 5 }, (_, i) => ({
-          team_id: `FT-0${i + 1}`,
-          status: ['available', 'en_route', 'on_site'][Math.floor(Math.random() * 3)],
-          location: {
-            lat: 17.65 + Math.random() * 0.20,
-            lng: 83.15 + Math.random() * 0.20,
-          },
-          updated_at: new Date().toISOString(),
-        }))
+        Array.from({ length: 5 }, (_, i) => {
+          const base = VIZAG_LOCATIONS[Math.floor(Math.random() * VIZAG_LOCATIONS.length)];
+          return {
+            team_id: `FT-0${i + 1}`,
+            status: ['available', 'en_route', 'on_site'][Math.floor(Math.random() * 3)],
+            location: {
+              lat: base.lat + (Math.random() - 0.5) * 0.005,
+              lng: base.lng + (Math.random() - 0.5) * 0.005,
+            },
+            updated_at: new Date().toISOString(),
+          };
+        })
       );
     }
   }, [loading]);

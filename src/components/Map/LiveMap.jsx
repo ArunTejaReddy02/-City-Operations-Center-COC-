@@ -64,6 +64,25 @@ export default function LiveMap({
         map.on('load', () => {
           mapRef.current = map;
           setMapLoaded(true);
+          // Store initial center to keep pointer stable during zoom
+          let stableCenter = map.getCenter();
+          map.on('zoom', () => {
+            const zoom = map.getZoom();
+            // Hide complaints and sensor markers when zoomed out too far
+            const hide = zoom < 12;
+            Object.values(markersRef.current).forEach((m) => {
+              if (!m._customType) return;
+              if (m._customType === 'team') return; // always show teams
+              const el = m.getElement();
+              el.style.display = hide ? 'none' : '';
+            });
+            // Keep map center stable when zooming via scroll to prevent pointer drift
+            stableCenter = map.getCenter();
+          });
+          // Ensure center is preserved after zoom ends
+          map.on('zoomend', () => {
+            map.setCenter(stableCenter);
+          });
         });
       } catch (err) {
         console.error('[LiveMap] Failed to initialize MapLibre:', err);
@@ -214,6 +233,7 @@ export default function LiveMap({
     const marker = new maplibregl.Marker({ element: el })
       .setLngLat([lng, lat])
       .addTo(mapRef.current);
+    marker._customType = type;
 
     // Marker drop animation
     gsap.fromTo(el,
