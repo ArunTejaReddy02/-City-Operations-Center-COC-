@@ -5,7 +5,7 @@ import { IconButton } from '../UI/Buttons';
 import { MapSkeleton } from '../Loader/SkeletonLoaders';
 
 /**
- * LiveMap — Mapbox GL JS powered real-time map.
+ * LiveMap — MapLibre GL JS powered real-time map.
  * 
  * Features:
  *  - Animated marker placement (drop + ripple)
@@ -13,12 +13,14 @@ import { MapSkeleton } from '../Loader/SkeletonLoaders';
  *  - Smooth camera fly-to on new events
  *  - Hover effects on markers
  *  - Soft glow on selected markers
- *  - SVG routing path animation (mock)
- * 
- * Falls back to a styled placeholder if Mapbox token is unavailable.
+ *  - Style selector (Carto / OSM / OSM 3D)
  */
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
+const MAP_STYLES = {
+  carto: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+  openstreetmap: 'https://tiles.openfreemap.org/styles/bright',
+  openstreetmap3d: 'https://tiles.openfreemap.org/styles/liberty',
+};
 
 // Visakhapatnam center coords
 const DEFAULT_CENTER = [83.2185, 17.6868];
@@ -35,23 +37,21 @@ export default function LiveMap({
   const mapRef = useRef(null);
   const markersRef = useRef({});
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [useFallback, setUseFallback] = useState(!MAPBOX_TOKEN);
+  const [styleKey, setStyleKey] = useState('openstreetmap');
 
-  // Initialize Mapbox
+  // Initialize MapLibre
   useEffect(() => {
-    if (useFallback || !mapContainerRef.current) return;
+    if (!mapContainerRef.current) return;
 
     let map;
     const initMap = async () => {
       try {
-        const mapboxgl = (await import('mapbox-gl')).default;
-        await import('mapbox-gl/dist/mapbox-gl.css');
+        const maplibregl = await import('maplibre-gl');
+        await import('maplibre-gl/dist/maplibre-gl.css');
 
-        mapboxgl.accessToken = MAPBOX_TOKEN;
-
-        map = new mapboxgl.Map({
+        map = new maplibregl.Map({
           container: mapContainerRef.current,
-          style: 'mapbox://styles/mapbox/light-v11',
+          style: MAP_STYLES[styleKey] || MAP_STYLES.openstreetmap,
           center: DEFAULT_CENTER,
           zoom: DEFAULT_ZOOM,
           pitch: 0,
@@ -59,15 +59,14 @@ export default function LiveMap({
           attributionControl: false,
         });
 
-        map.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right');
+        map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-right');
 
         map.on('load', () => {
           mapRef.current = map;
           setMapLoaded(true);
         });
       } catch (err) {
-        console.error('[LiveMap] Failed to initialize Mapbox:', err);
-        setUseFallback(true);
+        console.error('[LiveMap] Failed to initialize MapLibre:', err);
       }
     };
 
@@ -76,7 +75,16 @@ export default function LiveMap({
     return () => {
       map?.remove();
     };
-  }, [useFallback]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Handle style changes dynamically
+  useEffect(() => {
+    if (!mapRef.current || !mapLoaded) return;
+    const is3D = styleKey === 'openstreetmap3d';
+    mapRef.current.setStyle(MAP_STYLES[styleKey]);
+    mapRef.current.easeTo({ pitch: is3D ? 60 : 0, duration: 500 });
+  }, [styleKey, mapLoaded]);
 
   // Add/update complaint markers
   useEffect(() => {
@@ -159,7 +167,7 @@ export default function LiveMap({
   const addMarker = useCallback(async ({ id, type, lng, lat, color, label, onClick }) => {
     if (!mapRef.current) return;
 
-    const mapboxgl = (await import('mapbox-gl')).default;
+    const maplibregl = await import('maplibre-gl');
 
     // Create custom marker element
     const el = document.createElement('div');
@@ -203,7 +211,7 @@ export default function LiveMap({
       gsap.to(el, { boxShadow: '0 2px 8px rgba(0,0,0,0.2)', duration: 0.2 });
     });
 
-    const marker = new mapboxgl.Marker({ element: el })
+    const marker = new maplibregl.Marker({ element: el })
       .setLngLat([lng, lat])
       .addTo(mapRef.current);
 
@@ -218,134 +226,30 @@ export default function LiveMap({
     markersRef.current[id] = marker;
   }, []);
 
-  // Fallback map (no Mapbox token)
-  if (useFallback) {
-    return (
-      <div className="map-container" style={{ background: 'var(--bg-section)', position: 'relative' }}>
-        <div style={{
-          width: '100%',
-          height: '100%',
-          minHeight: 500,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: `
-            radial-gradient(circle at 30% 40%, var(--accent-light) 0%, transparent 40%),
-            radial-gradient(circle at 70% 60%, rgba(96, 108, 56, 0.08) 0%, transparent 35%),
-            var(--bg-section)
-          `,
-          borderRadius: 'var(--radius-lg)',
-          position: 'relative',
-          overflow: 'hidden',
-        }}>
-          {/* Simulated grid lines */}
-          <div style={{
-            position: 'absolute',
-            inset: 0,
-            backgroundImage: `
-              linear-gradient(var(--border-light) 1px, transparent 1px),
-              linear-gradient(90deg, var(--border-light) 1px, transparent 1px)
-            `,
-            backgroundSize: '40px 40px',
-            opacity: 0.5,
-          }} />
-
-          {/* Simulated markers */}
-          {complaints.map((c, i) => {
-            const x = 20 + (i * 17) % 60;
-            const y = 20 + (i * 23) % 60;
-            return (
-              <div
-                key={c.complaint_id}
-                style={{
-                  position: 'absolute',
-                  left: `${x}%`,
-                  top: `${y}%`,
-                  width: 16,
-                  height: 16,
-                  borderRadius: '50%',
-                  background: 'var(--status-danger)',
-                  border: '2px solid var(--bg-primary)',
-                  boxShadow: '0 2px 6px rgba(188,108,37,0.35)',
-                  cursor: 'pointer',
-                }}
-                onClick={() => onMarkerClick?.('complaint', c)}
-              />
-            );
-          })}
-
-          {fieldTeams.map((t, i) => {
-            const x = 30 + (i * 19) % 50;
-            const y = 30 + (i * 29) % 50;
-            return (
-              <div
-                key={t.team_id}
-                style={{
-                  position: 'absolute',
-                  left: `${x}%`,
-                  top: `${y}%`,
-                  width: 16,
-                  height: 16,
-                  borderRadius: '50%',
-                  background: 'var(--status-info)',
-                  border: '2px solid var(--bg-primary)',
-                  boxShadow: '0 2px 6px rgba(96,108,56,0.3)',
-                  cursor: 'pointer',
-                }}
-                onClick={() => onMarkerClick?.('team', t)}
-              />
-            );
-          })}
-
-          <div style={{ position: 'relative', zIndex: 1, textAlign: 'center' }}>
-            <Navigation size={32} color="var(--accent-primary)" style={{ marginBottom: 12 }} />
-            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)', fontWeight: 'var(--font-medium)' }}>
-              Visakhapatnam — Ward GVMC-W12
-            </p>
-            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', marginTop: 4 }}>
-              {MAPBOX_TOKEN ? 'Map loading...' : 'Set VITE_MAPBOX_TOKEN for full map'}
-            </p>
-          </div>
-        </div>
-
-        {/* Map controls overlay */}
-        <div className="map-overlay-controls">
-          <IconButton icon={ZoomIn} label="Zoom in" />
-          <IconButton icon={ZoomOut} label="Zoom out" />
-          <IconButton icon={Locate} label="Center on ward" />
-          <IconButton icon={Layers} label="Toggle layers" />
-        </div>
-
-        {/* Legend */}
-        <div className="map-legend">
-          <div className="map-legend-item">
-            <span className="map-legend-dot" style={{ background: 'var(--status-danger)' }} />
-            <span>Complaints</span>
-          </div>
-          <div className="map-legend-item">
-            <span className="map-legend-dot" style={{ background: 'var(--status-warning)' }} />
-            <span>Sensor Events</span>
-          </div>
-          <div className="map-legend-item">
-            <span className="map-legend-dot" style={{ background: 'var(--status-info)' }} />
-            <span>Field Teams</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="map-container">
+    <div className="map-container relative" style={{ height: '100%' }}>
       {!mapLoaded && <MapSkeleton />}
+
+      {/* Map Style Dropdown (matches LandingMapPreview) */}
+      <div className="absolute top-4 right-4 z-10" style={{ zIndex: 200 }}>
+        <select
+          value={styleKey}
+          onChange={(e) => setStyleKey(e.target.value)}
+          className="bg-[#faf5d0] text-[#283618] rounded-md border border-[#d4cc9a] px-3 py-1.5 text-sm shadow font-semibold focus:outline-none cursor-pointer"
+        >
+          <option value="carto">Default (Carto)</option>
+          <option value="openstreetmap">OpenStreetMap</option>
+          <option value="openstreetmap3d">OpenStreetMap 3D</option>
+        </select>
+      </div>
+
       <div
         ref={mapContainerRef}
         style={{ width: '100%', height: '100%', minHeight: 500, visibility: mapLoaded ? 'visible' : 'hidden' }}
       />
 
       {/* Map controls overlay */}
-      <div className="map-overlay-controls">
+      <div className="map-overlay-controls" style={{ zIndex: 10 }}>
         <IconButton icon={ZoomIn} label="Zoom in" onClick={() => mapRef.current?.zoomIn()} />
         <IconButton icon={ZoomOut} label="Zoom out" onClick={() => mapRef.current?.zoomOut()} />
         <IconButton icon={Locate} label="Center on ward" onClick={() => mapRef.current?.flyTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })} />
@@ -353,7 +257,7 @@ export default function LiveMap({
       </div>
 
       {/* Legend */}
-      <div className="map-legend">
+      <div className="map-legend" style={{ zIndex: 10 }}>
         <div className="map-legend-item">
           <span className="map-legend-dot" style={{ background: 'var(--status-danger)' }} />
           <span>Complaints</span>

@@ -20,6 +20,15 @@ export default function useWebSocket(url, { onMessage, mockMode = true } = {}) {
   const reconnectTimerRef = useRef(null);
   const mockTimerRef = useRef(null);
   const onMessageRef = useRef(onMessage);
+  
+  // Track mock team positions so they don't teleport wildly
+  const teamPositionsRef = useRef(
+    Array.from({ length: 12 }, (_, i) => ({
+      team_id: `FT-${String(i + 1).padStart(2, '0')}`,
+      lat: 17.65 + Math.random() * 0.20,
+      lng: 83.15 + Math.random() * 0.20,
+    }))
+  );
 
   // Keep callback ref fresh
   useEffect(() => {
@@ -87,50 +96,60 @@ export default function useWebSocket(url, { onMessage, mockMode = true } = {}) {
   const startMockEvents = useCallback(() => {
     // Generate synthetic events at random intervals
     const generateEvent = () => {
-      const events = [
-        {
+      const eventTypes = ['complaint.new', 'sensor.new', 'team.update', 'assignment.new'];
+      const type = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+      
+      let event = null;
+      
+      if (type === 'complaint.new') {
+        event = {
           type: 'complaint.new',
           data: {
             complaint_id: `CMP-${Date.now().toString(36).toUpperCase()}`,
             type: ['pothole', 'road_obstruction', 'waterlogging', 'streetlight'][Math.floor(Math.random() * 4)],
             description: ['Large pothole near bus stop', 'Road obstruction on main road', 'Waterlogging in residential area', 'Streetlight malfunction'][Math.floor(Math.random() * 4)],
             location: {
-              lat: 17.6868 + (Math.random() - 0.5) * 0.01,
-              lng: 83.2185 + (Math.random() - 0.5) * 0.01,
+              lat: 17.65 + Math.random() * 0.20,
+              lng: 83.15 + Math.random() * 0.20,
             },
             ward_id: 'GVMC-W12',
             status: 'received',
             reported_at: new Date().toISOString(),
           },
-        },
-        {
+        };
+      } else if (type === 'sensor.new') {
+        event = {
           type: 'sensor.new',
           data: {
             event_id: `SEN-${Date.now().toString(36).toUpperCase()}`,
             asset_id: `CCTV-VZG-${Math.floor(Math.random() * 200)}`,
             event_type: 'road_obstruction',
             location: {
-              lat: 17.6871 + (Math.random() - 0.5) * 0.008,
-              lng: 83.2183 + (Math.random() - 0.5) * 0.008,
+              lat: 17.65 + Math.random() * 0.20,
+              lng: 83.15 + Math.random() * 0.20,
             },
             timestamp: new Date().toISOString(),
             confidence: +(0.6 + Math.random() * 0.35).toFixed(2),
             source: 'COC',
           },
-        },
-        {
+        };
+      } else if (type === 'team.update') {
+        const team = teamPositionsRef.current[Math.floor(Math.random() * 12)];
+        // Move team slightly to simulate driving (approx max ~500 meters)
+        team.lat = Math.max(17.65, Math.min(17.85, team.lat + (Math.random() - 0.5) * 0.005));
+        team.lng = Math.max(83.15, Math.min(83.35, team.lng + (Math.random() - 0.5) * 0.005));
+        
+        event = {
           type: 'team.update',
           data: {
-            team_id: `FT-${String(Math.floor(Math.random() * 12) + 1).padStart(2, '0')}`,
+            team_id: team.team_id,
             status: ['available', 'en_route', 'on_site', 'done'][Math.floor(Math.random() * 4)],
-            location: {
-              lat: 17.689 + (Math.random() - 0.5) * 0.012,
-              lng: 83.217 + (Math.random() - 0.5) * 0.012,
-            },
+            location: { lat: team.lat, lng: team.lng },
             updated_at: new Date().toISOString(),
           },
-        },
-        {
+        };
+      } else if (type === 'assignment.new') {
+        event = {
           type: 'assignment.new',
           data: {
             alert_id: `ALR-${Date.now().toString(36).toUpperCase()}`,
@@ -140,11 +159,12 @@ export default function useWebSocket(url, { onMessage, mockMode = true } = {}) {
             eta_minutes: Math.floor(Math.random() * 20) + 5,
             issued_at: new Date().toISOString(),
           },
-        },
-      ];
+        };
+      }
 
-      const event = events[Math.floor(Math.random() * events.length)];
-      onMessageRef.current?.(event);
+      if (event) {
+        onMessageRef.current?.(event);
+      }
 
       // Schedule next event (3-8 seconds)
       const nextDelay = 3000 + Math.random() * 5000;

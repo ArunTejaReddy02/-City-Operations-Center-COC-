@@ -185,14 +185,17 @@ export default function Dashboard() {
   // Generate initial mock data
   useEffect(() => {
     if (!loading) {
-      // Seed some initial field teams
-      setFieldTeams([
-        { team_id: 'FT-01', status: 'available', location: { lat: 17.689, lng: 83.217 }, updated_at: new Date().toISOString() },
-        { team_id: 'FT-02', status: 'en_route', location: { lat: 17.685, lng: 83.221 }, updated_at: new Date().toISOString() },
-        { team_id: 'FT-03', status: 'available', location: { lat: 17.691, lng: 83.215 }, updated_at: new Date().toISOString() },
-        { team_id: 'FT-04', status: 'on_site', location: { lat: 17.684, lng: 83.219 }, updated_at: new Date().toISOString() },
-        { team_id: 'FT-05', status: 'available', location: { lat: 17.688, lng: 83.222 }, updated_at: new Date().toISOString() },
-      ]);
+      setFieldTeams(
+        Array.from({ length: 5 }, (_, i) => ({
+          team_id: `FT-0${i + 1}`,
+          status: ['available', 'en_route', 'on_site'][Math.floor(Math.random() * 3)],
+          location: {
+            lat: 17.65 + Math.random() * 0.20,
+            lng: 83.15 + Math.random() * 0.20,
+          },
+          updated_at: new Date().toISOString(),
+        }))
+      );
     }
   }, [loading]);
 
@@ -253,30 +256,6 @@ export default function Dashboard() {
               />
             </div>
           )}
-
-          {/* Map + Triage Panel */}
-          <div className="dashboard-grid-main">
-            <div ref={mapRef} style={{ opacity: 0, height: '100%' }}>
-              <LiveMap
-                complaints={complaints}
-                sensorEvents={sensorEvents}
-                fieldTeams={fieldTeams}
-                selectedIncident={selectedIncident}
-                onMarkerClick={(type, data) => {
-                  if (type === 'complaint') setSelectedIncident(data);
-                }}
-              />
-            </div>
-
-            <div ref={triageRef} style={{ opacity: 0, height: '100%' }}>
-              <TriagePanel
-                incidents={complaints}
-                selectedId={selectedIncident?.complaint_id}
-                onSelectIncident={setSelectedIncident}
-                onDispatch={handleDispatch}
-              />
-            </div>
-          </div>
 
           {/* Quick Stats / Charts placeholder row */}
           <div className="dashboard-grid-charts" ref={chartsRef}>
@@ -369,6 +348,31 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          {/* Map + Triage Panel */}
+          <div className="dashboard-grid-main">
+            <div ref={mapRef} style={{ opacity: 0, height: '100%', minHeight: 0 }}>
+              <LiveMap
+                complaints={complaints}
+                sensorEvents={sensorEvents}
+                fieldTeams={fieldTeams}
+                selectedIncident={selectedIncident}
+                onMarkerClick={(type, data) => {
+                  if (type === 'complaint') setSelectedIncident(data);
+                }}
+              />
+            </div>
+
+            <div ref={triageRef} style={{ opacity: 0, height: '100%', minHeight: 0 }}>
+              <TriagePanel
+                incidents={complaints}
+                selectedId={selectedIncident?.complaint_id}
+                onSelectIncident={setSelectedIncident}
+                onDispatch={handleDispatch}
+              />
+            </div>
+          </div>
+
         </div>
       </DashboardLayout>
     </>
