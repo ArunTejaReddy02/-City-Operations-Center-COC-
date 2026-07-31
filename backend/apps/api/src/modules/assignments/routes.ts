@@ -1,0 +1,9 @@
+import { Router } from "express";
+import { validateRequest, authenticateJWT, requireRole } from "@vizagops/api";
+import { CreateAssignmentSchema, UpdateAssignmentSchema } from "@vizagops/validation";
+import { Role } from "@vizagops/prisma";
+import { createAssignment, updateAssignment } from "./controller";
+const router = Router();
+router.post("/", authenticateJWT, requireRole([Role.ADMIN, Role.WARD_OFFICER]), validateRequest(CreateAssignmentSchema), createAssignment);
+router.patch("/:id", authenticateJWT, validateRequest(UpdateAssignmentSchema), updateAssignment);
+export default router;

@@ -1,0 +1,10 @@
+import { Router } from "express";
+import { validateRequest, authenticateJWT, requireRole } from "@vizagops/api";
+import { CreateFieldTeamSchema, UpdateFieldTeamSchema } from "@vizagops/validation";
+import { Role } from "@vizagops/prisma";
+import { getAll, create, update } from "./controller";
+const router = Router();
+router.get("/", authenticateJWT, getAll);
+router.post("/", authenticateJWT, requireRole([Role.ADMIN, Role.WARD_OFFICER]), validateRequest(CreateFieldTeamSchema), create);
+router.patch("/:id", authenticateJWT, validateRequest(UpdateFieldTeamSchema), update);
+export default router;

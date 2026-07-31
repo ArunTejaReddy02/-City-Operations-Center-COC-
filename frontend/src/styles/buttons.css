@@ -1,0 +1,258 @@
+/* ============================================================
+   VIZAG OPS UNIFY — Button System
+   Premium Tactile Interactions
+   ============================================================ */
+
+/* --- Base Button --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  line-height: 1;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  padding: var(--space-3) var(--space-5);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-normal) var(--ease-out),
+              background var(--duration-fast) ease;
+  will-change: transform, box-shadow;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+/* Ripple container */
+.btn .btn-ripple {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.btn .btn-ripple-circle {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.btn-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* --- Primary Button --- */
+.btn-primary {
+  background: var(--accent-gradient);
+  color: #fefae0;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-accent);
+}
+
+.btn-primary:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: var(--shadow-xs);
+}
+
+/* --- Dispatch Button --- */
+.btn-dispatch {
+  background: var(--accent-primary);
+  color: #fefae0;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-lg);
+  font-weight: var(--font-bold);
+  box-shadow: var(--shadow-accent);
+  letter-spacing: 0.01em;
+}
+
+.btn-dispatch:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-accent-lg);
+}
+
+.btn-dispatch:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.btn-dispatch.confirming {
+  background: var(--status-success);
+  box-shadow: 0 4px 14px rgba(96, 108, 56, 0.25);
+}
+
+.btn-dispatch.confirming:hover {
+  box-shadow: 0 8px 24px rgba(96, 108, 56, 0.3);
+}
+
+/* --- Status Button --- */
+.btn-status {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-full);
+}
+
+.btn-status:hover {
+  background: var(--bg-section);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+}
+
+.btn-status.active {
+  background: var(--accent-light);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+.btn-status.status-available {
+  background: rgba(96, 108, 56, 0.1);
+  color: #283618;
+  border-color: rgba(96, 108, 56, 0.3);
+}
+
+.btn-status.status-en-route {
+  background: rgba(96, 108, 56, 0.08);
+  color: #606c38;
+  border-color: rgba(96, 108, 56, 0.25);
+}
+
+.btn-status.status-on-site {
+  background: rgba(221, 161, 94, 0.12);
+  color: #bc6c25;
+  border-color: rgba(221, 161, 94, 0.3);
+}
+
+.btn-status.status-done {
+  background: rgba(40, 54, 24, 0.06);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+/* --- Icon Button --- */
+.btn-icon {
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  width: 36px;
+  height: 36px;
+}
+
+.btn-icon:hover {
+  background: var(--bg-section);
+  color: var(--text-primary);
+  border-color: var(--accent-primary);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+.btn-icon:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.btn-icon.active {
+  background: var(--accent-light);
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+}
+
+/* --- Floating Action Button --- */
+.btn-fab {
+  position: fixed;
+  bottom: var(--space-8);
+  right: var(--space-8);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  color: #fefae0;
+  box-shadow: var(--shadow-accent-lg);
+  z-index: var(--z-dropdown);
+  padding: 0;
+}
+
+.btn-fab:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 12px 32px rgba(188, 108, 37, 0.35);
+}
+
+.btn-fab:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* --- Secondary / Ghost Buttons --- */
+.btn-secondary {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-secondary);
+  border-color: var(--accent-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: var(--space-2) var(--space-3);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-section);
+  color: var(--text-primary);
+}
+
+/* --- Button Sizes --- */
+.btn-xs {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  border-radius: var(--radius-sm);
+}
+
+.btn-sm {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-xs);
+}
+
+.btn-lg {
+  padding: var(--space-4) var(--space-8);
+  font-size: var(--text-base);
+  border-radius: var(--radius-lg);
+}
+
+/* --- Disabled --- */
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}

@@ -1,0 +1,33 @@
+{
+    "compilerOptions":  {
+                            "forceConsistentCasingInFileNames":  true,
+                            "resolveJsonModule":  true,
+                            "moduleResolution":  "node",
+                            "baseUrl":  ".",
+                            "strict":  true,
+                            "target":  "ES2022",
+                            "esModuleInterop":  true,
+                            "skipLibCheck":  true,
+                            "module":  "CommonJS",
+                            "paths":  {
+                                          "@vizagops/config":  [
+                                                                   "packages/config/src/index.ts"
+                                                               ],
+                                          "@vizagops/validation":  [
+                                                                       "packages/validation/src/index.ts"
+                                                                   ],
+                                          "@vizagops/logger":  [
+                                                                   "packages/logger/src/index.ts"
+                                                               ],
+                                          "@vizagops/types":  [
+                                                                  "packages/types/src/index.ts"
+                                                              ],
+                                          "@vizagops/prisma":  [
+                                                                   "packages/prisma"
+                                                               ],
+                                          "@vizagops/api/*":  [
+                                                                  "packages/api/src/*"
+                                                              ]
+                                      }
+                        }
+}

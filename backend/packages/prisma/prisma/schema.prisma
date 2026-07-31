@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  WARD_OFFICER
+  FIELD_AGENT
+  CITIZEN
+}
+
+enum AssignmentStatus {
+  PENDING
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum FieldTeamStatus {
+  AVAILABLE
+  BUSY
+  OFFLINE
+}
+
+model User {
+  id           String       @id @default(uuid())
+  name         String
+  email        String       @unique
+  passwordHash String
+  role         Role         @default(CITIZEN)
+  isActive     Boolean      @default(true)
+  deletedAt    DateTime?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  assignments  Assignment[] @relation("AssignedByRelation")
+
+  @@map("users")
+}
+
+model Complaint {
+  id                      String       @id @default(uuid())
+  citizenId               String?
+  title                   String
+  description             String?
+  category                String?
+  priority                String?
+  severity                String?
+  status                  String       @default("PENDING") // PENDING, OPEN, RESOLVED, CLOSED, CANCELLED
+  ward                    String?
+  department              String?
+  latitude                Float?
+  longitude               Float?
+  source                  String?
+  imageUrls               String[]
+  estimatedResolutionTime DateTime?
+  resolutionNotes         String?
+  attachments             String[]
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+
+  assignments             Assignment[]
+
+  @@index([status])
+  @@index([priority])
+  @@index([category])
+  @@index([createdAt])
+  @@map("complaints")
+}
+
+model SensorEvent {
+  id        String   @id @default(uuid())
+  type      String
+  severity  String
+  latitude  Float?
+  longitude Float?
+  metadata  Json?
+  timestamp DateTime @default(now())
+
+  @@map("sensor_events")
+}
+
+model FieldTeam {
+  id           String          @id @default(uuid())
+  name         String
+  members      String[]
+  currentLat   Float?
+  currentLng   Float?
+  availability FieldTeamStatus @default(AVAILABLE)
+
+  assignments  Assignment[]
+
+  @@map("field_teams")
+}
+
+model Assignment {
+  id          String           @id @default(uuid())
+  complaintId String
+  fieldTeamId String
+  assignedById String?
+  assignedAt  DateTime         @default(now())
+  status      AssignmentStatus @default(ASSIGNED)
+  completedAt DateTime?
+
+  complaint   Complaint        @relation(fields: [complaintId], references: [id])
+  fieldTeam   FieldTeam        @relation(fields: [fieldTeamId], references: [id])
+  assignedBy  User?            @relation("AssignedByRelation", fields: [assignedById], references: [id])
+
+  @@index([fieldTeamId])
+  @@map("assignments")
+}
+
+model AuditLog {
+  id            String   @id @default(uuid())
+  entity        String
+  entityId      String
+  action        String
+  performedBy   String?
+  timestamp     DateTime @default(now())
+  prevHash      String
+  entryHash     String
+  metadata      Json?
+  
+  // Telemetry fields
+  requestId     String?
+  ipAddress     String?
+  userAgent     String?
+  service       String?
+  version       String?
+
+  @@index([timestamp])
+  @@map("audit_logs")
+}

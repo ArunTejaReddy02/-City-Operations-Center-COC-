@@ -1,0 +1,20 @@
+{
+    "private": true,
+    "workspaces": [
+        "apps/*",
+        "packages/*"
+    ],
+    "name": "vizagops-backend",
+    "scripts": {
+        "build": "npm run build --workspaces --if-present",
+        "dev": "concurrently \"npm run dev -w @vizagops/api-gateway\" \"npm run dev -w @vizagops/audit\"",
+        "lint": "npm run lint --workspaces --if-present"
+    },
+    "devDependencies": {
+        "concurrently": "^10.0.4",
+        "prisma": "^7.9.1"
+    },
+    "dependencies": {
+        "@prisma/client": "^7.9.1"
+    }
+}
