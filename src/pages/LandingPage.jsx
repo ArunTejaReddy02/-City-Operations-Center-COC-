@@ -8,6 +8,7 @@ import InteractiveDashboardPreview from '../components/Landing/InteractiveDashbo
 import LandingMapPreview from '../components/Landing/LandingMapPreview';
 import RoleSelectionModal from '../components/Landing/RoleSelectionModal';
 import CursorSpotlight from '../components/Effects/CursorSpotlight';
+import Footer from '../components/Landing/Footer';
 
 export default function LandingPage() {
   const [roleModalOpen, setRoleModalOpen] = useState(false);
@@ -34,7 +35,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#fefae0] text-[#283618] relative selection:bg-[#dda15e]/30">
+    <div className="min-h-screen bg-[#fefae0] text-[#283618] relative selection:bg-[#dda15e]/30 overflow-x-hidden">
       <CursorSpotlight />
 
       {/* Navigation */}
@@ -62,15 +63,7 @@ export default function LandingPage() {
       />
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-[#d4cc9a]/60 bg-[#faf5d0] text-xs text-[#606c38]">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-[#283618]">VizagOps Unify</span>
-            <span>• GVMC/GVSCCL Municipal Pilot</span>
-          </div>
-          <div>Built with React, GSAP & Leaflet</div>
-        </div>
-      </footer>
+      <Footer onGetStarted={() => setRoleModalOpen(true)} />
     </div>
   );
 }

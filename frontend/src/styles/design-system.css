@@ -107,6 +107,11 @@
   padding: 0;
 }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
 html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
@@ -119,7 +124,6 @@ body {
   color: var(--text-primary);
   background-color: var(--bg-primary);
   line-height: 1.6;
-  overflow-x: hidden;
 }
 
 /* --- Typography Utilities --- */
@@ -158,9 +162,7 @@ body {
 }
 
 .card-glass {
-  background: rgba(254, 250, 224, 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(254, 250, 224, 0.95);
   border: 1px solid rgba(212, 204, 154, 0.5);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);

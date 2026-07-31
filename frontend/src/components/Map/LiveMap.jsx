@@ -1,6 +1,4 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
-import { Layers, ZoomIn, ZoomOut, Locate } from 'lucide-react';
-import { IconButton } from '../UI/Buttons';
 import { MapSkeleton } from '../Loader/SkeletonLoaders';
 
 // Visakhapatnam center coords
@@ -129,11 +127,7 @@ export default function LiveMap({
         style={{ width: '100%', height: '100%', minHeight: '450px', visibility: mapLoaded ? 'visible' : 'hidden' }}
       />
 
-      <div className="map-overlay-controls absolute top-4 right-4 flex flex-col gap-2 z-10">
-        <IconButton icon={ZoomIn} label="Zoom in" onClick={() => mapRef.current?.zoomIn()} />
-        <IconButton icon={ZoomOut} label="Zoom out" onClick={() => mapRef.current?.zoomOut()} />
-        <IconButton icon={Locate} label="Center on ward" onClick={() => mapRef.current?.flyTo({ center: DEFAULT_CENTER, zoom: DEFAULT_ZOOM })} />
-      </div>
+
     </div>
   );
 }

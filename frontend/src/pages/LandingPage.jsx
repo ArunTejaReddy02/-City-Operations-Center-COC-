@@ -35,7 +35,7 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#fefae0] text-[#283618] relative selection:bg-[#dda15e]/30">
+    <div className="min-h-screen bg-[#fefae0] text-[#283618] relative selection:bg-[#dda15e]/30 overflow-x-hidden">
       <CursorSpotlight />
 
       {/* Navigation */}

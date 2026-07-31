@@ -193,6 +193,84 @@ export default function Dashboard() {
         { team_id: 'FT-04', status: 'on_site', location: { lat: 17.684, lng: 83.219 }, updated_at: new Date().toISOString() },
         { team_id: 'FT-05', status: 'available', location: { lat: 17.688, lng: 83.222 }, updated_at: new Date().toISOString() },
       ]);
+
+      // Seed initial complaints to make the incident feed overflow and scrollable
+      setComplaints([
+        {
+          complaint_id: 'CMP-POTH001',
+          type: 'pothole',
+          description: 'Deep pothole on the main road lane causing traffic slow-down.',
+          location: { lat: 17.689, lng: 83.217 },
+          ward_id: 'GVMC-W12',
+          status: 'received',
+          reported_at: new Date(Date.now() - 5 * 60000).toISOString(),
+        },
+        {
+          complaint_id: 'CMP-WAT002',
+          type: 'waterlogging',
+          description: 'Waterlogging at the intersection near the central market.',
+          location: { lat: 17.685, lng: 83.221 },
+          ward_id: 'GVMC-W12',
+          status: 'assigned',
+          assigned_team_id: 'FT-02',
+          reported_at: new Date(Date.now() - 15 * 60000).toISOString(),
+        },
+        {
+          complaint_id: 'CMP-LIGHT003',
+          type: 'streetlight',
+          description: 'Multiple streetlights blinking or completely out of order.',
+          location: { lat: 17.691, lng: 83.215 },
+          ward_id: 'GVMC-W12',
+          status: 'received',
+          reported_at: new Date(Date.now() - 25 * 60000).toISOString(),
+        },
+        {
+          complaint_id: 'CMP-OBS004',
+          type: 'road_obstruction',
+          description: 'Fallen tree branch blocking the left pedestrian walkway.',
+          location: { lat: 17.684, lng: 83.219 },
+          ward_id: 'GVMC-W12',
+          status: 'in-progress',
+          assigned_team_id: 'FT-04',
+          reported_at: new Date(Date.now() - 35 * 60000).toISOString(),
+        },
+        {
+          complaint_id: 'CMP-POTH005',
+          type: 'pothole',
+          description: 'Aggressive pothole group near the metro station exit.',
+          location: { lat: 17.688, lng: 83.222 },
+          ward_id: 'GVMC-W12',
+          status: 'received',
+          reported_at: new Date(Date.now() - 45 * 60000).toISOString(),
+        },
+        {
+          complaint_id: 'CMP-WAT006',
+          type: 'waterlogging',
+          description: 'Minor flooding in the residential street after brief shower.',
+          location: { lat: 17.687, lng: 83.220 },
+          ward_id: 'GVMC-W12',
+          status: 'received',
+          reported_at: new Date(Date.now() - 55 * 60000).toISOString(),
+        },
+        {
+          complaint_id: 'CMP-LIGHT007',
+          type: 'streetlight',
+          description: 'Streetlight pole #45 completely dark for 3 consecutive days.',
+          location: { lat: 17.690, lng: 83.216 },
+          ward_id: 'GVMC-W12',
+          status: 'received',
+          reported_at: new Date(Date.now() - 65 * 60000).toISOString(),
+        },
+        {
+          complaint_id: 'CMP-OBS008',
+          type: 'road_obstruction',
+          description: 'Discarded construction material on the road shoulder.',
+          location: { lat: 17.683, lng: 83.218 },
+          ward_id: 'GVMC-W12',
+          status: 'received',
+          reported_at: new Date(Date.now() - 75 * 60000).toISOString(),
+        }
+      ]);
     }
   }, [loading]);
 
@@ -206,10 +284,12 @@ export default function Dashboard() {
       {loading && <CinematicLoader onComplete={handleLoaderComplete} />}
 
       <DashboardLayout wsStatus={wsStatus} activeIncidents={activeComplaints}>
+        {/* Notifications disabled
         <NotificationCenter
           notifications={notifications}
           onDismiss={handleDismissNotification}
         />
+        */}
 
         <div className="dashboard-grid" style={{ gap: 'var(--space-6)' }}>
           {/* Statistics Row */}
@@ -253,30 +333,6 @@ export default function Dashboard() {
               />
             </div>
           )}
-
-          {/* Map + Triage Panel */}
-          <div className="dashboard-grid-main">
-            <div ref={mapRef} style={{ opacity: 0, height: '100%' }}>
-              <LiveMap
-                complaints={complaints}
-                sensorEvents={sensorEvents}
-                fieldTeams={fieldTeams}
-                selectedIncident={selectedIncident}
-                onMarkerClick={(type, data) => {
-                  if (type === 'complaint') setSelectedIncident(data);
-                }}
-              />
-            </div>
-
-            <div ref={triageRef} style={{ opacity: 0, height: '100%' }}>
-              <TriagePanel
-                incidents={complaints}
-                selectedId={selectedIncident?.complaint_id}
-                onSelectIncident={setSelectedIncident}
-                onDispatch={handleDispatch}
-              />
-            </div>
-          </div>
 
           {/* Quick Stats / Charts placeholder row */}
           <div className="dashboard-grid-charts" ref={chartsRef}>
@@ -367,6 +423,30 @@ export default function Dashboard() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+
+          {/* Map + Triage Panel */}
+          <div className="dashboard-grid-main">
+            <div ref={mapRef} style={{ opacity: 0, height: '100%' }}>
+              <LiveMap
+                complaints={complaints}
+                sensorEvents={sensorEvents}
+                fieldTeams={fieldTeams}
+                selectedIncident={selectedIncident}
+                onMarkerClick={(type, data) => {
+                  if (type === 'complaint') setSelectedIncident(data);
+                }}
+              />
+            </div>
+
+            <div ref={triageRef} style={{ opacity: 0, height: '100%' }}>
+              <TriagePanel
+                incidents={complaints}
+                selectedId={selectedIncident?.complaint_id}
+                onSelectIncident={setSelectedIncident}
+                onDispatch={handleDispatch}
+              />
             </div>
           </div>
         </div>
