@@ -13,4 +13,11 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ['maplibre-gl'],
   },
+  server: {
+    port: 5174,
+    strictPort: true,
+    fs: {
+      allow: ['..'],
+    },
+  },
 })

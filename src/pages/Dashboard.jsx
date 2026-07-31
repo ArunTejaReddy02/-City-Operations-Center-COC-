@@ -94,9 +94,9 @@ export default function Dashboard() {
     }
   }, [synced]);
 
-  const { status: wsStatus } = useWebSocket('ws://localhost:3001/ws', {
+  const { status: wsStatus } = useWebSocket('ws://localhost:3000/ws', {
     onMessage: handleWsMessage,
-    mockMode: true,
+    mockMode: false,  // Connect to live backend; auto-falls back to mock if unreachable
   });
 
   const addNotification = useCallback((notif) => {
@@ -115,8 +115,32 @@ export default function Dashboard() {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   }, []);
 
-  const handleDispatch = useCallback((incident) => {
-    // Simulate dispatch
+  const handleDispatch = useCallback(async (incident) => {
+    // Try real API dispatch, fall back to mock if unavailable
+    try {
+      const token = localStorage.getItem('vizagops_token');
+      if (token) {
+        // Find an available team from our local state
+        const availableTeam = fieldTeams.find((t) => t.status === 'available');
+        if (availableTeam) {
+          await fetch('http://localhost:3000/api/v1/assignments', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              complaintId: incident.complaint_id,
+              fieldTeamId: availableTeam.team_id,
+            }),
+          });
+        }
+      }
+    } catch (err) {
+      console.warn('[Dashboard] Real dispatch failed, using mock fallback:', err);
+    }
+
+    // Optimistic UI update regardless of API result
     setComplaints((prev) =>
       prev.map((c) =>
         c.complaint_id === incident.complaint_id
@@ -129,7 +153,7 @@ export default function Dashboard() {
       message: `Nearest team assigned to ${incident.complaint_id}`,
       priority: 'low',
     });
-  }, [addNotification]);
+  }, [addNotification, fieldTeams]);
 
   // Entrance animation (runs after loader completes)
   const handleLoaderComplete = useCallback(() => {
@@ -182,23 +206,81 @@ export default function Dashboard() {
     }
   }, { dependencies: [loading] });
 
-  // Generate initial mock data
+  // Fetch initial data from backend, fall back to mock data if unavailable
   useEffect(() => {
     if (!loading) {
-      setFieldTeams(
-        Array.from({ length: 5 }, (_, i) => {
-          const base = VIZAG_LOCATIONS[Math.floor(Math.random() * VIZAG_LOCATIONS.length)];
-          return {
-            team_id: `FT-0${i + 1}`,
-            status: ['available', 'en_route', 'on_site'][Math.floor(Math.random() * 3)],
-            location: {
-              lat: base.lat + (Math.random() - 0.5) * 0.005,
-              lng: base.lng + (Math.random() - 0.5) * 0.005,
-            },
-            updated_at: new Date().toISOString(),
-          };
-        })
-      );
+      const fetchInitialData = async () => {
+        const token = localStorage.getItem('vizagops_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+        try {
+          const [complaintsRes, teamsRes, sensorsRes] = await Promise.allSettled([
+            fetch('http://localhost:3000/api/v1/complaints', { headers }),
+            fetch('http://localhost:3000/api/v1/field-teams', { headers }),
+            fetch('http://localhost:3000/api/v1/sensor-events', { headers }),
+          ]);
+
+          // Load complaints from backend
+          if (complaintsRes.status === 'fulfilled' && complaintsRes.value.ok) {
+            const data = await complaintsRes.value.json();
+            if (data.data?.length) {
+              setComplaints(data.data.map((c) => ({
+                complaint_id: c.id,
+                type: c.category?.toLowerCase() || 'general',
+                description: c.description || '',
+                location: { lat: c.latitude || 17.6871, lng: c.longitude || 83.2183 },
+                ward_id: c.ward || 'GVMC-W12',
+                status: c.status?.toLowerCase() || 'pending',
+                reported_at: c.createdAt,
+              })));
+            }
+          }
+
+          // Load field teams from backend
+          if (teamsRes.status === 'fulfilled' && teamsRes.value.ok) {
+            const data = await teamsRes.value.json();
+            if (data.data?.length) {
+              setFieldTeams(data.data.map((t) => ({
+                team_id: t.id,
+                status: t.availability?.toLowerCase() || 'available',
+                location: { lat: t.currentLat || 17.6871, lng: t.currentLng || 83.2183 },
+                updated_at: new Date().toISOString(),
+              })));
+              return; // Skip mock data generation
+            }
+          }
+
+          // Load sensor events from backend
+          if (sensorsRes.status === 'fulfilled' && sensorsRes.value.ok) {
+            const data = await sensorsRes.value.json();
+            if (data.data?.length) {
+              setSensorEvents(data.data);
+            }
+          }
+        } catch (err) {
+          console.warn('[Dashboard] Backend unreachable, using mock data');
+        }
+
+        // Generate mock field teams if backend had none
+        if (fieldTeams.length === 0) {
+          setFieldTeams(
+            Array.from({ length: 5 }, (_, i) => {
+              const base = VIZAG_LOCATIONS[Math.floor(Math.random() * VIZAG_LOCATIONS.length)];
+              return {
+                team_id: `FT-0${i + 1}`,
+                status: ['available', 'en_route', 'on_site'][Math.floor(Math.random() * 3)],
+                location: {
+                  lat: base.lat + (Math.random() - 0.5) * 0.005,
+                  lng: base.lng + (Math.random() - 0.5) * 0.005,
+                },
+                updated_at: new Date().toISOString(),
+              };
+            })
+          );
+        }
+      };
+
+      fetchInitialData();
     }
   }, [loading]);
 
