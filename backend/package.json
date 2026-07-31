@@ -14,11 +14,11 @@
     },
     "devDependencies": {
         "concurrently": "^10.0.4",
-        "prisma": "^7.9.1",
         "typescript": "^5.9.3"
     },
     "dependencies": {
-        "@prisma/client": "^7.9.1",
+        "@prisma/client": "^5.10.2",
+        "prisma": "^5.10.2",
         "ws": "^8.21.1"
     }
 }

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/index.js",
   "scripts": {
-    "generate": "prisma generate",
+    "generate": "npx prisma generate",
     "migrate:dev": "prisma migrate dev",
     "studio": "prisma studio",
     "seed": "prisma db seed"
@@ -11,12 +11,12 @@
   "dependencies": {
     "@prisma/client": "^5.10.2",
     "bcryptjs": "^3.0.3",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "prisma": "^5.10.2"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "prisma": "^5.10.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
