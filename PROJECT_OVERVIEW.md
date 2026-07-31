@@ -1,7 +1,5 @@
 # VizagOps Unify — Comprehensive Project Guide & Architecture Documentation
 
-![VizagOps Unify](https://img.shields.io/badge/Status-Pilot_Phase-emerald) ![Tech Stack](https://img.shields.io/badge/Stack-Node.js_%7C_React19_%7C_Prisma-blue) ![Database](https://img.shields.io/badge/Database-Neon_DB_(PostgreSQL)-blue) ![AI](https://img.shields.io/badge/AI-Groq_Llama_3.3_70B-purple) ![Location](https://img.shields.io/badge/City-Visakhapatnam_(GVMC)-orange)
-
 **Project Codename:** VizagOps Unify  
 **Target Organization:** Greater Visakhapatnam Municipal Corporation (GVMC) & Visakhapatnam Smart City Corporation Limited (GVSCCL)  
 **Repository:** [github.com/ArunTejaReddy02/-City-Operations-Center-COC-](https://github.com/ArunTejaReddy02/-City-Operations-Center-COC-)  
@@ -197,7 +195,7 @@ The frontend (`frontend/`) is built using **React 19**, **Vite 8**, **Tailwind C
 
 ---
 
-## 8. How to Run Locally
+## 8. How to Run locally
 
 ### Prerequisites
 - Node.js (v18+)
@@ -250,7 +248,7 @@ npm run seed
    - Point out the Triage Panel on the right showing live citizen grievances.
    - Click on any complaint card to trigger smooth map panning (`flyTo`).
 4. **Citizen Portal (`/citizen`)**:
-   - Log in as a Citizen and submit a new pothole complaint with photo evidence & GPS detection.
+   - Log in as a Citizen and submit a new pothole complaint.
    - Show the real-time status tracker transitioning from `Received → Under Review → Team Assigned`.
 5. **AI Summarization & Triage**:
    - Show how Groq Llama 3.3 70B analyzes incoming complaints and calculates an emergency priority score.

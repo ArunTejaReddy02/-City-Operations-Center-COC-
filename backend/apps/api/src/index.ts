@@ -19,6 +19,7 @@ import matchingRoutes from "./modules/matching/routes";
 import statusRoutes from "./modules/status/routes";
 import notificationRoutes from "./modules/notifications/routes";
 import analyticsRoutes from "./modules/analytics/routes";
+import aiRoutes from "./modules/ai/routes";
 import { initWebSocketServer } from "./ws";
 
 const app = express();
@@ -39,6 +40,7 @@ app.use("/api/v1/matching", matchingRoutes);
 app.use("/api/v1/status", statusRoutes);
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/analytics", analyticsRoutes);
+app.use("/api/v1/ai", aiRoutes);
 
 // Swagger config
 const swaggerOptions = {

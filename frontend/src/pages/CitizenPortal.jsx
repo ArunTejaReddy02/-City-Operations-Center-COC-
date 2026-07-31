@@ -4,7 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import {
   MapPin, FileText, Clock, CheckCircle, AlertTriangle,
   ChevronRight, Plus, ArrowLeft, Send, Eye, X, Loader2,
-  User, LogOut, Phone, Star, RefreshCw
+  User, LogOut, Phone, Star, RefreshCw, Camera, Image as ImageIcon,
+  Trash2, Navigation, Upload, Check
 } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
@@ -49,16 +50,63 @@ export default function CitizenPortal() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
 
   // New complaint form state
   const [form, setForm] = useState({
     title: '',
     description: '',
-    category: '',
+    category: 'INFRASTRUCTURE',
     priority: 'MEDIUM',
+    address: '',
+    attachment: null,
     latitude: 17.6868,
     longitude: 83.2185,
   });
+
+  /* ── GPS Geolocation Handler ──────────────────────────────── */
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    setLocationLoading(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setForm(prev => ({
+          ...prev,
+          latitude: Number(position.coords.latitude.toFixed(4)),
+          longitude: Number(position.coords.longitude.toFixed(4)),
+        }));
+        setLocationLoading(false);
+      },
+      (error) => {
+        console.error('GPS error:', error);
+        alert('Unable to retrieve location. Please type your address or adjust coordinates manually.');
+        setLocationLoading(false);
+      }
+    );
+  };
+
+  /* ── Image Upload & Preview Handler ───────────────────────── */
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size should be less than 5MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setForm(prev => ({
+        ...prev,
+        attachment: reader.result,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
 
   /* ── Fetch Complaints (mock for now, real API ready) ─────── */
   const fetchComplaints = useCallback(async () => {
@@ -159,7 +207,8 @@ export default function CitizenPortal() {
         }, ...prev]);
       }
 
-      setForm({ title: '', description: '', category: '', priority: 'MEDIUM', latitude: 17.6868, longitude: 83.2185 });
+      const resetForm = { title: '', description: '', category: 'INFRASTRUCTURE', priority: 'MEDIUM', address: '', attachment: null, latitude: 17.6868, longitude: 83.2185 };
+      setForm(resetForm);
       setView('list');
     } catch (err) {
       // Offline fallback
@@ -169,7 +218,7 @@ export default function CitizenPortal() {
         status: 'PENDING',
         createdAt: new Date().toISOString(),
       }, ...prev]);
-      setForm({ title: '', description: '', category: '', priority: 'MEDIUM', latitude: 17.6868, longitude: 83.2185 });
+      setForm({ title: '', description: '', category: 'INFRASTRUCTURE', priority: 'MEDIUM', address: '', attachment: null, latitude: 17.6868, longitude: 83.2185 });
       setView('list');
     } finally {
       setSubmitting(false);
@@ -286,13 +335,28 @@ export default function CitizenPortal() {
             </div>
           </div>
 
+          {/* Photo Evidence */}
+          {c.attachment && (
+            <div style={{ marginBottom: 20 }}>
+              <p style={{ fontSize: '0.7rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>📷 Photo Evidence</p>
+              <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border-light)', maxHeight: 320 }}>
+                <img src={c.attachment} alt="Evidence" style={{ width: '100%', maxHeight: 320, objectFit: 'cover', display: 'block' }} />
+              </div>
+            </div>
+          )}
+
           {/* Location */}
-          {c.latitude && c.longitude && (
-            <div style={{ padding: '12px 16px', background: '#f9fafb', borderRadius: 10, border: '1px solid #e5e7eb' }}>
-              <p style={{ fontSize: '0.7rem', color: '#9ca3af', marginBottom: 4 }}>📍 Location</p>
-              <p style={{ fontSize: '0.8rem', color: '#283618', fontFamily: 'var(--font-mono)' }}>
-                {c.latitude.toFixed(4)}, {c.longitude.toFixed(4)}
-              </p>
+          {(c.address || (c.latitude && c.longitude)) && (
+            <div style={{ padding: '14px 16px', background: '#f9fafb', borderRadius: 10, border: '1px solid #e5e7eb' }}>
+              <p style={{ fontSize: '0.7rem', color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>📍 Location & Address</p>
+              {c.address && (
+                <p style={{ fontSize: '0.85rem', fontWeight: 600, color: '#283618', marginBottom: 4 }}>{c.address}</p>
+              )}
+              {c.latitude && c.longitude && (
+                <p style={{ fontSize: '0.8rem', color: '#606c38', fontFamily: 'var(--font-mono)' }}>
+                  GPS: {c.latitude.toFixed(4)}, {c.longitude.toFixed(4)}
+                </p>
+              )}
             </div>
           )}
         </div>
@@ -388,6 +452,108 @@ export default function CitizenPortal() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Location & Address Section */}
+          <div style={{ padding: 16, background: '#faf5d0', borderRadius: 12, border: '1px solid #d4cc9a' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#283618', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <MapPin size={16} color="#bc6c25" /> Location & Address
+              </span>
+              <button
+                type="button"
+                onClick={handleDetectLocation}
+                disabled={locationLoading}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 6,
+                  background: '#283618', color: '#fefae0', border: 'none',
+                  padding: '6px 12px', borderRadius: 8, fontSize: '0.75rem',
+                  fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s ease'
+                }}
+              >
+                {locationLoading ? (
+                  <><Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Detecting...</>
+                ) : (
+                  <><Navigation size={12} /> Detect My Location</>
+                )}
+              </button>
+            </div>
+
+            {/* Address Field */}
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ ...labelStyle, fontSize: '0.75rem' }}>Landmark / Address</label>
+              <input
+                type="text"
+                value={form.address}
+                onChange={e => setForm(p => ({ ...p, address: e.target.value }))}
+                placeholder="e.g. Near Siripuram Circle, Ward 12"
+                style={{ ...inputStyle, background: '#fff' }}
+              />
+            </div>
+
+            {/* Coordinates Fields */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div>
+                <label style={{ fontSize: '0.7rem', color: '#606c38', display: 'block', marginBottom: 4 }}>Latitude</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={form.latitude}
+                  onChange={e => setForm(p => ({ ...p, latitude: parseFloat(e.target.value) || 0 }))}
+                  style={{ ...inputStyle, background: '#fff', fontSize: '0.8rem' }}
+                />
+              </div>
+              <div>
+                <label style={{ fontSize: '0.7rem', color: '#606c38', display: 'block', marginBottom: 4 }}>Longitude</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={form.longitude}
+                  onChange={e => setForm(p => ({ ...p, longitude: parseFloat(e.target.value) || 0 }))}
+                  style={{ ...inputStyle, background: '#fff', fontSize: '0.8rem' }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Photo Evidence Section */}
+          <div>
+            <label style={labelStyle}>Photo Evidence (Optional)</label>
+            {form.attachment ? (
+              <div style={{ position: 'relative', borderRadius: 12, overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+                <img src={form.attachment} alt="Evidence preview" style={{ width: '100%', height: 180, objectFit: 'cover', display: 'block' }} />
+                <button
+                  type="button"
+                  onClick={() => setForm(p => ({ ...p, attachment: null }))}
+                  style={{
+                    position: 'absolute', top: 8, right: 8,
+                    background: 'rgba(225, 29, 72, 0.9)', color: '#fff',
+                    border: 'none', borderRadius: '50%', padding: 8, cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}
+                  title="Remove photo"
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ) : (
+              <label style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                padding: '24px 16px', borderRadius: 12, border: '2px dashed #d4cc9a',
+                background: '#fff', cursor: 'pointer', transition: 'all 0.15s ease'
+              }}>
+                <Camera size={28} color="#bc6c25" style={{ marginBottom: 8 }} />
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#283618' }}>Upload Photo or Take Picture</span>
+                <span style={{ fontSize: '0.75rem', color: '#606c38', marginTop: 2 }}>Supports JPG, PNG up to 5MB</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleImageUpload}
+                  style={{ display: 'none' }}
+                />
+              </label>
+            )}
           </div>
 
           {/* Submit */}
