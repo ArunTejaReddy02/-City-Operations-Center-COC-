@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Map } from "@/components/ui/map";
+import { Map } from "@/components/UI/map";
 
 const styles = {
   default: undefined,
