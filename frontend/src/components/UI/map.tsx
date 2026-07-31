@@ -25,8 +25,9 @@ function loadGoogleMapsScript(callback: () => void) {
   if (isScriptLoading) return;
   isScriptLoading = true;
 
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "";
   const script = document.createElement("script");
-  script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBdua__bO_ArJEfbvvziK8WhCCCgY6RreI&libraries=places,geometry`;
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,geometry`;
   script.async = true;
   script.defer = true;
   script.onload = () => {

@@ -154,8 +154,7 @@ The system leverages the **Groq AI Cloud API** (`llama-3.3-70b-versatile`) for s
 
 The frontend (`frontend/`) is built using **React 19**, **Vite 8**, **Tailwind CSS**, **GSAP**, and **Lucide React**.
 
-### 🗺️ Google Maps JavaScript API Wrapper (`src/components/UI/map.tsx`)
-- Replaced MapLibre GL with a custom Google Maps JS API wrapper (`AIzaSyBdua__...`).
+- **Google Maps JS API Integration:** Replaced MapLibre GL with a custom Google Maps JS API wrapper configured via environment variables (`VITE_GOOGLE_MAPS_API_KEY`).
 - **Custom React Overlay:** Implemented a subclass of `google.maps.OverlayView` to render custom HTML React components (such as animated SVG/div markers with ripple effects) directly on top of Google Maps coordinates.
 - **Tree-Shaking Optimization:** Reduced the main JS bundle size from **1.94 MB to 838 KB** (a **1.1 MB performance savings**).
 - **Ref Compatibility:** Supports `.flyTo({ center: [lng, lat], zoom })` and `.easeTo({ pitch, bearing })` for smooth pan/zoom transitions.
