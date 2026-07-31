@@ -133,20 +133,20 @@
 
 /* --- Main Content Area --- */
 .dashboard-main {
-  flex: 1;
-  min-width: 0;
+  width: calc(100% - var(--sidebar-width));
   margin-left: var(--sidebar-width);
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  max-width: calc(100vw - var(--sidebar-width));
+  min-width: 0;
+  box-sizing: border-box;
   transition: margin-left var(--duration-slow) var(--ease-out),
-              max-width var(--duration-slow) var(--ease-out);
+              width var(--duration-slow) var(--ease-out);
 }
 
 .dashboard-sidebar.collapsed ~ .dashboard-main {
   margin-left: var(--sidebar-collapsed-width);
-  max-width: calc(100vw - var(--sidebar-collapsed-width));
+  width: calc(100% - var(--sidebar-collapsed-width));
 }
 
 /* --- Command Center Header --- */
@@ -827,7 +827,7 @@
   }
   .dashboard-main {
     margin-left: 0;
-    max-width: 100vw;
+    width: 100%;
   }
   .dashboard-grid-stats {
     grid-template-columns: 1fr 1fr;
