@@ -12,10 +12,20 @@
         "dev": "concurrently \"npm run dev -w @vizagops/api-gateway\" \"npm run dev -w @vizagops/audit\"",
         "lint": "npm run lint --workspaces --if-present"
     },
-    "devDependencies": {
-        "concurrently": "^10.0.4",
-        "typescript": "^5.9.3"
+    "dependencies": {
+      "@prisma/client": "^5.10.2",
+      "prisma": "^5.10.2",
+      "ws": "^8.21.1",
+      "@types/express": "^5.0.6",
+      "@types/cors": "^2.8.19",
+      "@types/jsonwebtoken": "^9.0.10",
+      "@types/node": "^26.1.2",
+      "@types/ws": "^8.18.1"
     },
+    "devDependencies": {
+      "concurrently": "^10.0.4",
+      "typescript": "^5.9.3"
+    }
     "dependencies": {
         "@prisma/client": "^5.10.2",
         "prisma": "^5.10.2",
