@@ -77,6 +77,35 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const loginWithGoogle = useCallback(async (googleUser = {}) => {
+    setLoading(true);
+    try {
+      const email = googleUser.email || 'citizen.google@gmail.com';
+      const name = googleUser.name || 'Visakhapatnam Citizen';
+      const userData = {
+        id: `USR-GGL-${Date.now().toString().slice(-4)}`,
+        name,
+        email,
+        role: 'CITIZEN',
+        ward: 'GVMC-W12',
+        authProvider: 'google',
+      };
+      const token = `google-token-${Date.now()}`;
+
+      localStorage.setItem('accessToken', token);
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      setAccessToken(token);
+      setUser(userData);
+      return { success: true, user: userData };
+    } catch (error) {
+      console.error('Google login failed:', error);
+      return { success: false, error: error.message };
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('user');
@@ -90,6 +119,7 @@ export function AuthProvider({ children }) {
     isAuthenticated: !!accessToken,
     loading,
     login,
+    loginWithGoogle,
     logout,
   };
 
