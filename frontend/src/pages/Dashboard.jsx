@@ -428,34 +428,35 @@ export default function Dashboard() {
                 <span className="text-sm font-semibold">Assignment Latency</span>
                 <span className="badge badge-success">On Track</span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', marginTop: 'var(--space-4)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-4)', marginTop: 'var(--space-3)', flexWrap: 'wrap' }}>
                 <div style={{
-                  width: 80,
-                  height: 80,
+                  width: 72,
+                  height: 72,
                   borderRadius: '50%',
                   background: `conic-gradient(var(--accent-primary) ${85 * 3.6}deg, var(--accent-light) 0deg)`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  flexShrink: 0,
                 }}>
                   <div style={{
-                    width: 60,
-                    height: 60,
+                    width: 54,
+                    height: 54,
                     borderRadius: '50%',
                     background: 'var(--bg-primary)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: 'var(--text-lg)',
+                    fontSize: 'var(--text-base)',
                     fontWeight: 'var(--font-bold)',
                     color: 'var(--accent-primary)',
                   }}>
                     85%
                   </div>
                 </div>
-                <div>
-                  <div className="text-sm font-semibold">Under 5s Target</div>
-                  <div className="text-xs text-secondary" style={{ marginTop: 4 }}>17 of 20 incidents dispatched within SLA</div>
+                <div style={{ minWidth: 140, flex: 1 }}>
+                  <div className="text-sm font-semibold">Under 5s SLA Target</div>
+                  <div className="text-xs text-secondary" style={{ marginTop: 4 }}>17 of 20 incidents dispatched within target SLA</div>
                 </div>
               </div>
             </div>
@@ -465,7 +466,7 @@ export default function Dashboard() {
                 <span className="text-sm font-semibold">Team Utilization</span>
                 <span className="badge badge-info">Live</span>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-3)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
                 {[
                   { label: 'Available', value: 60, color: 'var(--status-success)' },
                   { label: 'En Route', value: 20, color: 'var(--status-info)' },
