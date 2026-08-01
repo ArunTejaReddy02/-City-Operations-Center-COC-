@@ -16,7 +16,11 @@ import NotificationCenter from '../components/Notifications/NotificationCenter';
 import useWebSocket from '../hooks/useWebSocket';
 import { useAuth } from '../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+const RENDER_API = 'https://city-operations-center-coc-i6aw.onrender.com/api/v1';
+const API_URL = import.meta.env.VITE_API_URL || 
+  (typeof window !== 'undefined' && (window.location.hostname.includes('vercel.app') || (!['localhost', '127.0.0.1'].includes(window.location.hostname) && !window.location.hostname.startsWith('10.') && !window.location.hostname.startsWith('192.')))
+    ? RENDER_API 
+    : 'http://localhost:3000/api/v1');
 
 const mapComplaintFromBackend = (c) => ({
   complaint_id: c.id || c.complaint_id,
@@ -123,7 +127,15 @@ export default function Dashboard() {
     }
   }, [synced]);
 
-  const { status: wsStatus } = useWebSocket('ws://localhost:3000/ws', {
+  const getWsUrl = () => {
+    if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+      return 'wss://city-operations-center-coc-i6aw.onrender.com/ws';
+    }
+    const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+    return `ws://${host}:3000/ws`;
+  };
+
+  const { status: wsStatus } = useWebSocket(getWsUrl(), {
     onMessage: handleWsMessage,
     mockMode: false,
   });
